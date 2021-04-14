@@ -8,7 +8,6 @@ import * as fs from 'fs';
 import { ClientRequest, IncomingMessage, ServerResponse } from 'http';
 import * as os from 'os';
 import * as path from 'path';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 
 /**
  * Methods of this interface will be called by untyped JS. Be very careful when changing this interface, as TypeScript may not be aware of
@@ -157,15 +156,20 @@ const authenticator = new MultiTenantAuthenticator();
 function setupForCorporateProxy() {
    // @ts-ignore
    const proxyConfig = CONFIG_PLACEHOLDER;
+   // @ts-ignore
+   const httpsProxyAgentPath = path.join('NODE_MODULES_PATH', 'https-proxy-agent');
 
-   const contexts = ['/mne', '/m3api-rest', '/ca', '/ODIN_DEV_TENANT'];
-   const proxyServer = process.env.http_proxy || process.env.HTTP_PROXY;
-   if (proxyServer) {
-      const agent = new HttpsProxyAgent(proxyServer);
-      console.log('Using corporate proxy server: ' + proxyServer);
-      contexts.forEach((context) => {
-         proxyConfig[context].agent = agent;
-      });
+   if (fs.existsSync(httpsProxyAgentPath)) {
+      const HttpsProxyAgent = require(httpsProxyAgentPath);
+      const contexts = ['/mne', '/m3api-rest', '/ca', '/ODIN_DEV_TENANT'];
+      const proxyServer = process.env.http_proxy || process.env.HTTP_PROXY;
+      if (proxyServer) {
+         const agent = new HttpsProxyAgent(proxyServer);
+         console.log('Using corporate proxy server: ' + proxyServer);
+         contexts.forEach((context) => {
+            proxyConfig[context].agent = agent;
+         });
+      }
    }
    return proxyConfig;
 }

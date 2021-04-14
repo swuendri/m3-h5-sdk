@@ -33,6 +33,17 @@ export const executeAngularCli = async (command: ISupportedAngularCommand, ...op
    });
 };
 
+export const nodeModulesPath = (absolutePath?: string): string | undefined => {
+   absolutePath = absolutePath || process.cwd();
+   const parentPath = path.join(absolutePath, '../');
+   if (fs.existsSync(path.join(absolutePath, 'node_modules'))) {
+      return path.join(absolutePath, 'node_modules');
+   } else if (parentPath === absolutePath) {
+      return undefined;
+   }
+   return nodeModulesPath(parentPath);
+}
+
 export const isAngularProject = (absolutePath?: string): boolean => {
    absolutePath = absolutePath || process.cwd();
    const parentPath = path.join(absolutePath, '../');

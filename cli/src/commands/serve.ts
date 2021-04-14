@@ -3,7 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as webpack from 'webpack';
 import * as WebpackDevServer from 'webpack-dev-server';
-import { executeAngularCli, isAngularProject, readConfig } from '../utils';
+import { executeAngularCli, isAngularProject, nodeModulesPath, readConfig } from '../utils';
 import { baseConfig } from './webpack.config';
 
 
@@ -110,7 +110,11 @@ function multiTenantProxyFile(proxyConfig: ProxyConfig, useIonApi?: boolean) {
       .replace(/\"ODIN_MT_SET_ION_API_TOKEN\"/g, 'function (...args) { authenticator.setIONAPIToken(...args) }')
       .replace(/\"ODIN_MT_CHECK_ION_API_AUTHENTICATION\"/g, 'function (...args) { authenticator.checkIONAPIAuthentication(...args) }')
       .replace(/\"ODIN_MT_ON_ERROR\"/g, 'function (...args) { authenticator.onError(...args) }');
-   const fileContent = mtToolContent.replace(/CONFIG_PLACEHOLDER/, configContent);
+   let fileContent = mtToolContent.replace(/CONFIG_PLACEHOLDER/, configContent);
+   const nmPath = nodeModulesPath();
+   if (nmPath) {
+      fileContent = fileContent.replace(/NODE_MODULES_PATH/, nmPath);
+   }
    return { content: fileContent, name: 'odin_proxy.js' };
 
    function rewritePath(originalPath: string, newPath: string) {
