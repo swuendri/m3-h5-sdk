@@ -1,6 +1,11 @@
-import { Config } from 'http-proxy-middleware';
+// import * from 'https-proxy-agent';
 import { ProxyConfigMap } from 'webpack-dev-server';
 import { IOdinConfiguration, isValidProxyUrl, readConfig, removeSurroundingSlash, writeConfig } from '../utils';
+
+interface Config {
+   target: any;
+   pathRewrite: { [regex: string]: string };
+}
 
 const isConfigurationObject = (obj?: string | Config): obj is Config => {
    return obj !== undefined && typeof obj !== 'string';
@@ -14,11 +19,12 @@ const configureProxyEntry = (url: string, apiPath: string, config: IOdinConfigur
    const cleanUrl = removeSurroundingSlash(url);
    if (isProxyConfigMap(config.proxy)) {
       const proxyEntry = config.proxy[apiPath];
-      if (isConfigurationObject(proxyEntry)) {
-         proxyEntry.target = cleanUrl;
+      if (isConfigurationObject(proxyEntry as Config)) {
+         const proxyEntryConfig = proxyEntry as Config;
+         proxyEntryConfig.target = cleanUrl;
          if (rewritePath) {
-            proxyEntry.pathRewrite = {};
-            proxyEntry.pathRewrite[`^${apiPath}`] = rewritePath;
+            proxyEntryConfig.pathRewrite = {};
+            proxyEntryConfig.pathRewrite[`^${apiPath}`] = rewritePath;
          }
       } else {
          console.warn(`Proxy entry for '${apiPath}' may be incorrectly formatted.`);

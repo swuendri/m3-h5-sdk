@@ -78,7 +78,7 @@ function prepareProxyFile(proxyConfig: ProxyConfig, options: IServeOptions) {
          const target = pathConfig.target;
          if (target) {
             pathConfig.headers = {
-               Origin: target,
+               Origin: target.toString(),
                Referer: `${target}/odin-dev-proxy`,
                ...pathConfig.headers,
             };
