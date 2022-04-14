@@ -156,22 +156,22 @@ const authenticator = new MultiTenantAuthenticator();
 function setupForCorporateProxy() {
    // @ts-ignore
    const proxyConfig = CONFIG_PLACEHOLDER;
+   let proxyConfigWithAgent: { [key: string]: {} } | undefined;
    // @ts-ignore
    const httpsProxyAgentPath = path.join('NODE_MODULES_PATH', 'https-proxy-agent');
+   const HttpsProxyAgent = require(httpsProxyAgentPath);
 
-   if (fs.existsSync(httpsProxyAgentPath)) {
-      const HttpsProxyAgent = require(httpsProxyAgentPath);
-      const contexts = ['/mne', '/m3api-rest', '/ca', '/ODIN_DEV_TENANT'];
-      const proxyServer = process.env.http_proxy || process.env.HTTP_PROXY;
-      if (proxyServer) {
-         const agent = new HttpsProxyAgent(proxyServer);
-         console.log('Using corporate proxy server: ' + proxyServer);
-         contexts.forEach((context) => {
-            proxyConfig[context].agent = agent;
-         });
-      }
+   const proxyServer = process.env.http_proxy || process.env.HTTP_PROXY;
+   if (proxyServer) {
+      const agent = new HttpsProxyAgent(proxyServer);
+      console.log('Using corporate proxy server: ' + proxyServer);
+
+      proxyConfigWithAgent = {};
+      Object.keys(proxyConfig).forEach((path) => {
+         proxyConfigWithAgent![path] = { ...proxyConfig[path], agent };
+      });
    }
-   return proxyConfig;
+   return proxyConfigWithAgent ? proxyConfigWithAgent : proxyConfig;
 }
 
 module.exports = setupForCorporateProxy();
